@@ -16,14 +16,16 @@ services:
         value: 10000
       - key: VITE_API_URL
         value: https://setharkk-backend.onrender.com/api
+      - key: NODE_VERSION
+        value: 18.x
 
   # Backend Service
   - type: web
     name: setharkk-backend
     runtime: docker
     repo: https://github.com/Setharkk/Application-Setharkk
-    dockerContext: .
-    dockerfilePath: ./backend/Dockerfile
+    dockerContext: backend
+    dockerfilePath: Dockerfile
     plan: free
     envVars:
       - key: NODE_ENV
@@ -42,8 +44,8 @@ services:
     name: setharkk-nginx
     runtime: docker
     repo: https://github.com/Setharkk/Application-Setharkk
-    dockerContext: ./nginx
-    dockerfilePath: ./nginx/Dockerfile
+    dockerContext: nginx
+    dockerfilePath: Dockerfile
     plan: free
     envVars:
       - key: FRONTEND_URL
