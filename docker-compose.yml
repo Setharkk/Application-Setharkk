@@ -77,9 +77,9 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=3000
-      - MONGODB_URI=mongodb://mongodb:27017/setharkk
+      - MONGODB_URI=mongodb://${MONGODB_USER}:${MONGODB_PASSWORD}@mongodb:27017/${MONGODB_DB}?authSource=admin
       - REDIS_URI=redis://redis:6379
-      - POSTGRES_URI=postgresql://setharkk:setharkk@postgres:5432/setharkk
+      - POSTGRES_URI=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       - ELASTICSEARCH_NODE=http://elasticsearch:9200
       - RABBITMQ_URI=amqp://rabbitmq:5672
     volumes:
