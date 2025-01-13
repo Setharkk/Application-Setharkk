@@ -1,4 +1,4 @@
-# Exported from Render
+# Render Blueprint Configuration
 version: "1"
 services:
   # Frontend Service
@@ -95,4 +95,5 @@ services:
           name: setharkk-backend
           type: web
           property: url
-    healthCheckPath: /health 
+    healthCheckPath: /health
+
