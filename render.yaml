@@ -1,34 +1,38 @@
 # Blueprint configuration for Setharkk application
 # This includes a frontend service, a backend service, and the databases (PostgreSQL, MongoDB, Redis).
+# Blueprint configuration for Setharkk application
+# This includes a frontend service, a backend service, and the databases (PostgreSQL, MongoDB, Redis).
+
 services:
   # Frontend Service
   - type: web
     name: setharkk-frontend
-    plan: free
-    runtime: docker
+    runtime: node
     repo: https://github.com/Setharkk/Application-Setharkk
-    buildCommand: "npm install && npm run build"
-    dockerfilePath: ./frontend/Dockerfile
+    rootDirectory: frontend
+    buildCommand: npm install && npm run build
+    startCommand: npm run preview
+    plan: free
     envVars:
+      - key: NODE_ENV
+        value: production
       - key: VITE_API_URL
-        fromService:
-          name: setharkk-backend
-          type: web
-          property: hostport
+        value: https://setharkk-backend.onrender.com/api
 
   # Backend Service
   - type: web
     name: setharkk-backend
-    plan: free
-    runtime: docker
+    runtime: node
     repo: https://github.com/Setharkk/Application-Setharkk
-    buildCommand: "npm install"
-    dockerfilePath: ./backend/Dockerfile
+    rootDirectory: backend
+    buildCommand: npm install
+    startCommand: npm start
+    plan: free
     envVars:
-      - key: POSTGRES_URI
-        fromDatabase:
-          name: setharkk-postgres
-          property: connectionString
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
       - key: MONGODB_URI
         fromDatabase:
           name: setharkk-mongodb
@@ -36,6 +40,10 @@ services:
       - key: REDIS_URI
         fromDatabase:
           name: setharkk-redis
+          property: connectionString
+      - key: POSTGRES_URI
+        fromDatabase:
+          name: setharkk-postgres
           property: connectionString
 
 databases:
