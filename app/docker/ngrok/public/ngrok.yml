@@ -1,0 +1,7 @@
+version: 3
+agent:
+  authtoken: 2rL9sSlV5P6I3VmrPYQI8P4ZaJJ_7gT6YwAhKznmYSjroTt7N
+endpoints:
+  - name: setharkk-web
+    addr: nginx:80
+    proto: http 

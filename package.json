@@ -1,0 +1,35 @@
+{
+  "name": "setharkk",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "check-deps": "node scripts/check-dependencies.js",
+    "update-deps": "npm-check-updates -u && npm install",
+    "update-deps:interactive": "npm-check -u",
+    "audit-fix": "npm audit fix",
+    "audit-fix:force": "npm audit fix --force",
+    "deps:outdated": "npm outdated",
+    "deps:clean": "rimraf node_modules package-lock.json && npm install"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.26.0",
+    "@babel/plugin-transform-runtime": "^7.25.9",
+    "@babel/preset-env": "^7.26.0",
+    "@types/axios": "^0.14.4",
+    "@types/bcrypt": "^5.0.2",
+    "@types/cors": "^2.8.17",
+    "@types/mongoose": "^5.11.97",
+    "@typescript-eslint/eslint-plugin": "^8.19.1",
+    "@typescript-eslint/parser": "^8.19.1",
+    "eslint": "^9.18.0",
+    "eslint-plugin-vue": "^9.32.0",
+    "typescript": "^5.7.3",
+    "npm-check": "^6.0.1",
+    "npm-check-updates": "^17.1.13",
+    "rimraf": "^6.0.1"
+  },
+  "dependencies": {
+    "@types/cheerio": "^0.22.35",
+    "cheerio": "^1.0.0"
+  }
+}

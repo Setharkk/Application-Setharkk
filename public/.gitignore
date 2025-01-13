@@ -1,0 +1,12 @@
+# Environnement
+.env
+.env.local
+.env.*
+
+# Dependencies
+node_modules/
+
+# Build
+dist/
+dist_electron/
+.codegpt

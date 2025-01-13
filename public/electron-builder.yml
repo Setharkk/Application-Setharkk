@@ -1,0 +1,36 @@
+appId: com.seoanalyzer.app
+productName: SEO Analyzer
+directories:
+  output: dist_electron
+  buildResources: build
+files:
+  - dist/**/*
+  - main.js
+  - preload.js
+  - services/**/*
+extraMetadata:
+  main: main.js
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+mac:
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+linux:
+  target:
+    - target: AppImage
+      arch:
+        - x64
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+publish:
+  provider: github
+  private: true 

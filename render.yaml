@@ -1,0 +1,61 @@
+services:
+  # Frontend service
+  - type: web
+    name: setharkk-frontend
+    runtime: node
+    rootDirectory: frontend
+    buildCommand: npm install && npm run build
+    startCommand: npm run preview
+    envVars:
+      - key: NODE_ENV
+        value: production
+    plan: free
+    instanceType: free
+
+  # Backend service  
+  - type: web
+    name: setharkk-backend
+    runtime: node
+    rootDirectory: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+    plan: free
+    instanceType: free
+
+  # Nginx service
+  - type: web
+    name: setharkk-nginx
+    runtime: docker
+    dockerfilePath: ./nginx/Dockerfile
+    envVars:
+      - key: FRONTEND_URL
+        fromService:
+          type: web
+          name: setharkk-frontend
+          property: url
+      - key: BACKEND_URL  
+        fromService:
+          type: web
+          name: setharkk-backend
+          property: url
+    plan: free
+    instanceType: free
+    healthCheckPath: /health
+
+  # Service PostgreSQL
+  - type: web
+    name: setharkk-postgres
+    runtime: docker
+    image: postgres:latest
+    envVars:
+      - key: POSTGRES_DB
+        value: setharkk
+      - key: POSTGRES_USER
+        value: setharkk
+      - key: POSTGRES_PASSWORD
+        generateValue: true 

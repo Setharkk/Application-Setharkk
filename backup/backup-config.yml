@@ -1,0 +1,50 @@
+schedules:
+  - name: "daily_backup"
+    schedule: "0 2 * * *"  # Tous les jours à 2h du matin
+    retention: 7  # Garde 7 jours de sauvegardes
+    services:
+      - name: "mongodb"
+        type: "mongodb"
+        host: "mongodb"
+        port: 27017
+        database: "setharkk"
+        output: "/backup/mongodb/%Y-%m-%d/"
+
+      - name: "postgres"
+        type: "postgresql"
+        host: "postgres"
+        port: 5432
+        database: "setharkk"
+        user: "setharkk"
+        output: "/backup/postgres/%Y-%m-%d/"
+
+      - name: "redis"
+        type: "redis"
+        host: "redis"
+        port: 6379
+        output: "/backup/redis/%Y-%m-%d/"
+
+      - name: "elasticsearch"
+        type: "elasticsearch"
+        host: "elasticsearch"
+        port: 9200
+        indices: ["*"]
+        output: "/backup/elasticsearch/%Y-%m-%d/"
+
+notifications:
+  email:
+    enabled: true
+    to: "admin@setharkk.com"
+    on_success: true
+    on_failure: true
+
+storage:
+  local:
+    path: "/backup"
+  
+  # Optionnel : Configuration pour stockage cloud
+  s3:
+    enabled: false
+    bucket: "setharkk-backups"
+    region: "eu-west-3"
+    path: "backups/" 

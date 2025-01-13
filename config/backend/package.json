@@ -1,0 +1,7 @@
+{
+  "name": "setharkk-backend",
+  "version": "1.0.0",
+  "description": "Backend pour l'application Setharkk",
+  "type": "module",
+  "main": "src/index.ts"
+} 

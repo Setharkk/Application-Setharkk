@@ -1,0 +1,1 @@
+export {}; // Fichier TypeScript vide pour initialiser la structure 

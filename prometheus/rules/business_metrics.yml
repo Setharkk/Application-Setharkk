@@ -1,0 +1,41 @@
+groups:
+  - name: business_metrics
+    rules:
+      # Métriques utilisateurs
+      - record: business:active_users:rate5m
+        expr: sum(rate(user_session_duration_seconds_count[5m]))
+
+      - record: business:new_users:daily
+        expr: sum(increase(user_registrations_total[24h]))
+
+      # Métriques transactions
+      - record: business:revenue:daily
+        expr: sum(increase(transaction_amount_total[24h]))
+
+      - record: business:conversion_rate
+        expr: sum(increase(successful_transactions_total[24h])) / sum(increase(total_transactions[24h])) * 100
+
+      # Métriques engagement
+      - record: business:avg_session_duration
+        expr: rate(user_session_duration_seconds_sum[1h]) / rate(user_session_duration_seconds_count[1h])
+
+      # Alertes business
+      - alert: LowConversionRate
+        expr: business:conversion_rate < 2
+        for: 1h
+        labels:
+          severity: warning
+          team: business
+        annotations:
+          summary: "Taux de conversion faible"
+          description: "Le taux de conversion est inférieur à 2% depuis 1 heure"
+
+      - alert: HighUserChurn
+        expr: (sum(increase(user_cancellations_total[7d])) / sum(increase(user_registrations_total[7d]))) * 100 > 5
+        for: 1d
+        labels:
+          severity: warning
+          team: retention
+        annotations:
+          summary: "Taux de désabonnement élevé"
+          description: "Le taux de désabonnement hebdomadaire dépasse 5%" 

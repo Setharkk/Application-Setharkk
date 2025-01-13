@@ -1,0 +1,23 @@
+{
+  "name": "memory-service",
+  "version": "1.0.0",
+  "description": "Service de gestion de la mémoire",
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "ts-node src/index.ts",
+    "build": "tsc",
+    "dev": "nodemon"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "redis": "^4.6.11",
+    "ioredis": "^5.3.2"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.10.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3",
+    "nodemon": "^3.0.2"
+  }
+} 

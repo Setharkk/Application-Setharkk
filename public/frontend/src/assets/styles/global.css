@@ -1,0 +1,76 @@
+/* Réinitialisation et styles de base */
+:root {
+  --primary-color: #1a1c23;
+  --text-color: #333;
+  --background-color: #fff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --primary-color: #2a2c33;
+    --text-color: #fff;
+    --background-color: #1a1c23;
+  }
+}
+
+/* Corrections de compatibilité */
+html {
+  font-size: 16px;
+}
+
+/* Filtres avec support multi-navigateurs */
+.inverted {
+  -webkit-filter: invert(100%);
+  filter: invert(100%);
+}
+
+/* Accessibilité des boutons et formulaires */
+button, 
+input[type="button"],
+input[type="submit"] {
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: 1px solid var(--primary-color);
+  background: var(--primary-color);
+  color: #fff;
+  font-size: 1rem;
+}
+
+button:focus,
+input:focus {
+  outline: 2px solid #4A90E2;
+  outline-offset: 2px;
+}
+
+/* Support des images */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Accessibilité des images */
+img[role="presentation"] {
+  content: "";
+}
+[aria-hidden="true"] {
+  display: none;
+}
+
+/* Support des formulaires */
+input,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: var(--background-color);
+  color: var(--text-color);
+}
+
+/* Accessibilité du focus */
+*:focus {
+  outline: 2px solid #4A90E2;
+  outline-offset: 2px;
+} 

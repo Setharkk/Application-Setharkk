@@ -1,0 +1,48 @@
+// Couleurs
+$primary-color: #1976D2;
+$secondary-color: #424242;
+$accent-color: #82B1FF;
+$error-color: #FF5252;
+$info-color: #2196F3;
+$success-color: #4CAF50;
+$warning-color: #FFC107;
+$background-color: #FFFFFF;
+
+// Bordures
+$border-width: 1px;
+$border-color: #E0E0E0;
+$border-radius: 4px;
+
+// Espacement
+$spacing-unit: 8px;
+$spacing-xs: $spacing-unit;
+$spacing-sm: $spacing-unit * 2;
+$spacing-md: $spacing-unit * 3;
+$spacing-lg: $spacing-unit * 4;
+$spacing-xl: $spacing-unit * 5;
+
+// Typographie
+$font-family: 'Roboto', sans-serif;
+$font-size-base: 16px;
+$font-size-sm: 14px;
+$font-size-lg: 18px;
+$font-weight-light: 300;
+$font-weight-regular: 400;
+$font-weight-medium: 500;
+$font-weight-bold: 700;
+
+// Breakpoints
+$breakpoint-xs: 600px;
+$breakpoint-sm: 960px;
+$breakpoint-md: 1264px;
+$breakpoint-lg: 1904px;
+
+// Z-index
+$z-index-drawer: 1000;
+$z-index-modal: 2000;
+$z-index-tooltip: 3000;
+$z-index-snackbar: 4000;
+
+// Transitions
+$transition-duration: 0.3s;
+$transition-timing: cubic-bezier(0.4, 0, 0.2, 1); 

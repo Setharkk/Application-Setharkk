@@ -1,0 +1,141 @@
+@import 'variables';
+
+// Reset et styles de base
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  font-family: $font-family;
+  font-size: $font-size-base;
+  line-height: 1.6;
+  color: $secondary-color;
+  background-color: #f5f5f5;
+}
+
+// Conteneurs
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: $spacing-md;
+}
+
+// Boutons
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-xs $spacing-md;
+  border: none;
+  border-radius: $border-radius;
+  font-size: $font-size-base;
+  font-weight: $font-weight-medium;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all $transition-duration $transition-timing;
+
+  &-primary {
+    background-color: $primary-color;
+    color: white;
+
+    &:hover {
+      background-color: darken($primary-color, 10%);
+    }
+  }
+
+  &-secondary {
+    background-color: $secondary-color;
+    color: white;
+
+    &:hover {
+      background-color: darken($secondary-color, 10%);
+    }
+  }
+}
+
+// Formulaires
+.form-group {
+  margin-bottom: $spacing-md;
+
+  label {
+    display: block;
+    margin-bottom: $spacing-xs;
+    font-weight: $font-weight-medium;
+  }
+
+  input, textarea, select {
+    width: 100%;
+    padding: $spacing-xs;
+    border: $border-width solid $border-color;
+    border-radius: $border-radius;
+    font-family: $font-family;
+    font-size: $font-size-base;
+
+    &:focus {
+      outline: none;
+      border-color: $primary-color;
+    }
+  }
+}
+
+// Cartes
+.card {
+  background-color: white;
+  border-radius: $border-radius;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+// Grille
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  margin: -$spacing-sm;
+
+  .col {
+    flex: 1;
+    padding: $spacing-sm;
+
+    &-1 { flex: 0 0 8.333333%; }
+    &-2 { flex: 0 0 16.666667%; }
+    &-3 { flex: 0 0 25%; }
+    &-4 { flex: 0 0 33.333333%; }
+    &-6 { flex: 0 0 50%; }
+    &-8 { flex: 0 0 66.666667%; }
+    &-9 { flex: 0 0 75%; }
+    &-12 { flex: 0 0 100%; }
+  }
+}
+
+// Utilitaires
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.text-left { text-align: left; }
+
+.mt-1 { margin-top: $spacing-xs; }
+.mt-2 { margin-top: $spacing-sm; }
+.mt-3 { margin-top: $spacing-md; }
+.mt-4 { margin-top: $spacing-lg; }
+.mt-5 { margin-top: $spacing-xl; }
+
+.mb-1 { margin-bottom: $spacing-xs; }
+.mb-2 { margin-bottom: $spacing-sm; }
+.mb-3 { margin-bottom: $spacing-md; }
+.mb-4 { margin-bottom: $spacing-lg; }
+.mb-5 { margin-bottom: $spacing-xl; }
+
+// Responsive
+@media (max-width: $breakpoint-sm) {
+  .container {
+    padding: $spacing-sm;
+  }
+
+  .row .col {
+    flex: 0 0 100%;
+  }
+} 

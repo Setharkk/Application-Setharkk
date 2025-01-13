@@ -1,0 +1,78 @@
+name: Dependency Check
+
+on:
+  schedule:
+    - cron: '0 0 * * 1' # Tous les lundis à minuit
+  workflow_dispatch:  # Permet le déclenchement manuel
+
+jobs:
+  check-dependencies:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Check for updates
+        id: ncu
+        run: |
+          npx npm-check-updates > updates.txt
+          echo "has_updates=$(test -s updates.txt && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
+      
+      - name: Run security audit
+        id: audit
+        run: |
+          npm audit --json > audit.json || true
+          echo "has_vulnerabilities=$(test -s audit.json && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
+      
+      - name: Create Issue for Updates
+        if: steps.ncu.outputs.has_updates == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const updates = fs.readFileSync('updates.txt', 'utf8');
+            
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '📦 Mises à jour de dépendances disponibles',
+              body: `Des mises à jour sont disponibles pour les packages suivants :
+              
+              \`\`\`
+              ${updates}
+              \`\`\`
+              
+              Veuillez vérifier ces mises à jour et les appliquer si approprié.`,
+              labels: ['dependencies']
+            });
+      
+      - name: Create Issue for Vulnerabilities
+        if: steps.audit.outputs.has_vulnerabilities == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const audit = JSON.parse(fs.readFileSync('audit.json', 'utf8'));
+            
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🚨 Vulnérabilités détectées dans les dépendances',
+              body: `Des vulnérabilités ont été détectées :
+              
+              \`\`\`json
+              ${JSON.stringify(audit, null, 2)}
+              \`\`\`
+              
+              Veuillez examiner et corriger ces vulnérabilités dès que possible.`,
+              labels: ['security', 'dependencies']
+            }); 

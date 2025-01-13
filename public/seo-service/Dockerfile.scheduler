@@ -1,0 +1,46 @@
+# Build stage
+FROM node:18-alpine as builder
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+COPY tsconfig.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy source code
+COPY . .
+
+# Build TypeScript code
+RUN npm run build
+
+# Production stage
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package files and install production dependencies
+COPY package*.json ./
+RUN npm install --only=production
+
+# Copy built files from builder
+COPY --from=builder /app/dist ./dist
+
+# Create necessary directories
+RUN mkdir -p /app/data && chown -R node:node /app/data
+
+# Environment variables
+ENV NODE_ENV=production \
+    TZ=UTC
+
+# Switch to non-root user
+USER node
+
+# Healthcheck pour le scheduler
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD ps aux | grep "[n]ode.*scheduler" || exit 1
+
+# Commande par défaut pour exécuter le scheduler
+CMD ["node", "dist/scheduler.js"] 

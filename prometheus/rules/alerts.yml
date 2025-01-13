@@ -1,0 +1,76 @@
+groups:
+  - name: app_alerts
+    rules:
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Memory Usage (instance {{ $labels.instance }})"
+          description: "Memory usage is above 85%\n  VALUE = {{ $value }}%"
+
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU Usage (instance {{ $labels.instance }})"
+          description: "CPU usage is above 85%\n  VALUE = {{ $value }}%"
+
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service Down (instance {{ $labels.instance }})"
+          description: "{{ $labels.job }} service is down\n  VALUE = {{ $value }}"
+
+      - alert: HighLatency
+        expr: rate(http_request_duration_seconds_sum[5m]) / rate(http_request_duration_seconds_count[5m]) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Latency (instance {{ $labels.instance }})"
+          description: "HTTP request latency is high\n  VALUE = {{ $value }}s"
+
+  - name: security_alerts
+    rules:
+      - alert: TooManyRequests
+        expr: rate(http_requests_total[1m]) > 1000
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Possible DDoS Attack (instance {{ $labels.instance }})"
+          description: "Too many requests detected\n  VALUE = {{ $value }} requests/sec"
+
+      - alert: UnauthorizedAccess
+        expr: rate(http_requests_total{status="401"}[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Multiple Unauthorized Access Attempts"
+          description: "High number of 401 responses\n  VALUE = {{ $value }}/s"
+
+      - alert: DatabaseConnections
+        expr: mongodb_connections_current > 500
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Database Connections"
+          description: "Number of active DB connections is high\n  VALUE = {{ $value }}"
+
+      - alert: RedisMemoryUsage
+        expr: redis_memory_used_bytes / redis_memory_max_bytes * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis Memory Usage High"
+          description: "Redis memory usage is above 80%\n  VALUE = {{ $value }}%" 

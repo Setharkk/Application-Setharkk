@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: setharkk-frontend
+    runtime: node
+    buildCommand: npm install && npm run build
+    startCommand: npm run preview
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: VITE_API_URL
+        value: https://setharkk-backend.onrender.com/api
+    plan: free
+
+  - type: web
+    name: setharkk-nginx
+    runtime: docker
+    dockerfilePath: ./nginx/Dockerfile
+    buildCommand: docker build -t setharkk-nginx .
+    startCommand: nginx -g 'daemon off;'
+    envVars:
+      - key: FRONTEND_URL
+        value: https://setharkk-frontend.onrender.com
+      - key: BACKEND_URL
+        value: https://setharkk-backend.onrender.com
+    plan: free 

@@ -1,0 +1,306 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./app/frontend
+      dockerfile: Dockerfile
+    volumes:
+      - ./app/frontend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://localhost:3030
+      - VITE_CHAT_URL=ws://chat-service:5000
+    ports:
+      - "3001:3000"
+    networks:
+      - app-network
+    depends_on:
+      - backend
+      - seo-service
+      - chat-service
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  backend:
+    build:
+      context: ./app/backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./app/backend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - MONGO_URI=mongodb://mongo:27017/setharkk
+      - REDIS_URI=redis://redis:6379
+      - ELASTICSEARCH_NODE=http://elasticsearch:9200
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRATION=24h
+      - SEO_SERVICE_URL=http://seo-service:4000
+      - MEMORY_SERVICE_URL=http://memory-service:6000
+      - CHAT_SERVICE_URL=http://chat-service:5000
+    ports:
+      - "3030:3000"
+    networks:
+      - app-network
+    depends_on:
+      - mongo
+      - redis
+      - elasticsearch
+      - seo-service
+      - memory-service
+      - chat-service
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  memory-service:
+    build:
+      context: ./memory-service
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=development
+      - PORT=6000
+      - MONGO_URI=mongodb://mongo:27017/setharkk_memory
+      - REDIS_URI=redis://redis:6379
+      - ELASTICSEARCH_NODE=http://elasticsearch:9200
+      - VECTOR_DB_URL=http://weaviate:8080
+      - MAX_MEMORY_SIZE=10000
+    ports:
+      - "6000:6000"
+    volumes:
+      - ./memory-service:/app
+      - /app/node_modules
+      - memory-data:/app/data
+    networks:
+      - app-network
+    depends_on:
+      - mongo
+      - redis
+      - elasticsearch
+      - weaviate
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:6000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  chat-service:
+    build:
+      context: ./chat-service
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=development
+      - PORT=5000
+      - MONGO_URI=mongodb://mongo:27017/setharkk_chat
+      - REDIS_URI=redis://redis:6379
+      - MEMORY_SERVICE_URL=http://memory-service:6000
+      - SEO_SERVICE_URL=http://seo-service:4000
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - MAX_TOKENS=4000
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./chat-service:/app
+      - /app/node_modules
+      - chat-data:/app/data
+    networks:
+      - app-network
+    depends_on:
+      - memory-service
+      - seo-service
+      - redis
+      - mongo
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  weaviate:
+    image: semitechnologies/weaviate:1.19.6
+    ports:
+      - "8080:8080"
+    environment:
+      - QUERY_DEFAULTS_LIMIT=25
+      - AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED=true
+      - PERSISTENCE_DATA_PATH=/var/lib/weaviate
+      - DEFAULT_VECTORIZER_MODULE=text2vec-transformers
+      - ENABLE_MODULES=text2vec-transformers
+      - TRANSFORMERS_INFERENCE_API=http://t2v-transformer:8080
+    volumes:
+      - weaviate_data:/var/lib/weaviate
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/v1/.well-known/ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  t2v-transformer:
+    image: semitechnologies/transformers-inference:sentence-transformers-multi-qa-MiniLM-L6-cos-v1
+    environment:
+      - ENABLE_CUDA=0
+    networks:
+      - app-network
+
+  seo-service:
+    build:
+      context: ./seo-service
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=development
+      - PORT=4000
+      - MONGO_URI=mongodb://mongo:27017/setharkk_seo
+      - REDIS_URI=redis://redis:6379
+      - ELASTICSEARCH_NODE=http://elasticsearch:9200
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - SCRAPER_POOL_SIZE=5
+      - MAX_CONCURRENT_ANALYSES=10
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./seo-service:/app
+      - /app/node_modules
+      - seo-data:/app/data
+    networks:
+      - app-network
+    depends_on:
+      - mongo
+      - redis
+      - elasticsearch
+      - rabbitmq
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:4000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  seo-worker:
+    build:
+      context: ./seo-service
+      dockerfile: Dockerfile.worker
+    environment:
+      - NODE_ENV=development
+      - MONGO_URI=mongodb://mongo:27017/setharkk_seo
+      - REDIS_URI=redis://redis:6379
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - WORKER_CONCURRENCY=3
+    volumes:
+      - ./seo-service:/app
+      - /app/node_modules
+      - seo-data:/app/data
+    networks:
+      - app-network
+    depends_on:
+      - seo-service
+      - mongo
+      - redis
+      - rabbitmq
+    command: ["npm", "run", "worker"]
+
+  seo-scheduler:
+    build:
+      context: ./seo-service
+      dockerfile: Dockerfile.scheduler
+    environment:
+      - NODE_ENV=development
+      - MONGO_URI=mongodb://mongo:27017/setharkk_seo
+      - REDIS_URI=redis://redis:6379
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+    volumes:
+      - ./seo-service:/app
+      - /app/node_modules
+    networks:
+      - app-network
+    depends_on:
+      - seo-service
+      - mongo
+      - redis
+      - rabbitmq
+    command: ["npm", "run", "scheduler"]
+
+  mongo:
+    image: mongo:6.0
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - app-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  redis:
+    image: redis:alpine
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  elasticsearch:
+    image: elasticsearch:8.11.3
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - bootstrap.memory_lock=true
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200/_cluster/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  mongo_data:
+  redis_data:
+  elasticsearch_data:
+  rabbitmq_data:
+  seo-data:
+  memory-data:
+  chat-data:
+  weaviate_data:
+
+networks:
+  app-network:
+    driver: bridge 

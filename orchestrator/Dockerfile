@@ -1,0 +1,19 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+RUN npm install
+
+# Copy source files
+COPY . .
+
+# Build if needed
+RUN npm run build
+
+# Expose port
+EXPOSE 3050
+
+# Start the service
+CMD ["npm", "start"] 

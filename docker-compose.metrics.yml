@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  metrics-collector:
+    build:
+      context: ./metrics-collector
+      target: development
+    ports:
+      - "9091:9091"
+    environment:
+      - NODE_ENV=development
+      - MONGODB_URI=mongodb://mongodb:27017/setharkk
+      - REDIS_URI=redis://redis:6379
+      - PORT=9091
+    volumes:
+      - ./metrics-collector:/app
+      - /app/node_modules
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  prometheus:
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    depends_on:
+      - metrics-collector
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge 

@@ -1,0 +1,77 @@
+# Build stage
+FROM node:18-alpine as builder
+
+WORKDIR /app
+
+# Installation des dépendances système nécessaires
+RUN apk add --no-cache \
+    chromium \
+    nss \
+    freetype \
+    freetype-dev \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont \
+    nodejs \
+    yarn \
+    python3 \
+    make \
+    g++
+
+# Configuration de Puppeteer
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
+# Copy package files
+COPY package*.json ./
+COPY tsconfig.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy source code
+COPY . .
+
+# Build TypeScript code
+RUN npm run build
+
+# Production stage
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Installation des dépendances système pour la production
+RUN apk add --no-cache \
+    chromium \
+    nss \
+    freetype \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont \
+    python3
+
+# Configuration de Puppeteer et autres variables d'environnement
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser \
+    NODE_ENV=production
+
+# Copy package files and install production dependencies
+COPY package*.json ./
+RUN npm install --only=production
+
+# Copy built files from builder
+COPY --from=builder /app/dist ./dist
+
+# Create data and cache directories
+RUN mkdir -p /app/data /app/cache && \
+    chown -R node:node /app/data /app/cache
+
+# Switch to non-root user
+USER node
+
+# Healthcheck pour le worker
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD ps aux | grep "[n]ode.*worker" || exit 1
+
+# Commande par défaut pour exécuter le worker
+CMD ["node", "dist/worker.js"] 
