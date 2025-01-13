@@ -1,61 +1,97 @@
+# Exported from Render
+version: "1"
 services:
-  # Frontend service
+  # Frontend Service
   - type: web
     name: setharkk-frontend
     runtime: node
+    repo: https://github.com/Setharkk/Application-Setharkk
     rootDirectory: frontend
     buildCommand: npm install && npm run build
     startCommand: npm run preview
+    plan: free
     envVars:
       - key: NODE_ENV
         value: production
-    plan: free
-    instanceType: free
+      - key: VITE_API_URL
+        value: https://setharkk-backend.onrender.com/api
 
-  # Backend service  
+  # Backend Service
   - type: web
     name: setharkk-backend
     runtime: node
+    repo: https://github.com/Setharkk/Application-Setharkk
     rootDirectory: backend
     buildCommand: npm install
     startCommand: npm start
+    plan: free
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 3000
-    plan: free
-    instanceType: free
+      - key: MONGODB_URI
+        value: ${MONGODB_URI}
+      - key: REDIS_URI
+        value: ${REDIS_URI}
+      - key: POSTGRES_URI
+        value: ${POSTGRES_URI}
 
-  # Nginx service
-  - type: web
-    name: setharkk-nginx
-    runtime: docker
-    dockerfilePath: ./nginx/Dockerfile
-    envVars:
-      - key: FRONTEND_URL
-        fromService:
-          type: web
-          name: setharkk-frontend
-          property: url
-      - key: BACKEND_URL  
-        fromService:
-          type: web
-          name: setharkk-backend
-          property: url
-    plan: free
-    instanceType: free
-    healthCheckPath: /health
-
-  # Service PostgreSQL
-  - type: web
+  # Base de données PostgreSQL
+  - type: pserv
     name: setharkk-postgres
     runtime: docker
     image: postgres:latest
+    plan: free
+    env: docker
+    disk:
+      name: postgres-data
+      mountPath: /var/lib/postgresql/data
+      sizeGB: 10
     envVars:
       - key: POSTGRES_DB
         value: setharkk
       - key: POSTGRES_USER
-        value: setharkk
+        generateValue: true
       - key: POSTGRES_PASSWORD
-        generateValue: true 
+        generateValue: true
+
+  # MongoDB Database
+  - type: pserv
+    name: setharkk-mongodb
+    plan: free
+    region: oregon
+    ipAllowList: []
+    disk:
+      name: data
+      mountPath: /data/db
+      sizeGB: 10
+
+  # Redis Cache
+  - type: pserv
+    name: setharkk-redis
+    plan: free
+    region: oregon
+    ipAllowList: []
+
+  # Nginx Service
+  - type: web
+    name: setharkk-nginx
+    runtime: docker
+    repo: https://github.com/Setharkk/Application-Setharkk
+    region: oregon
+    dockerContext: ./nginx
+    dockerfilePath: ./nginx/Dockerfile
+    plan: free
+    envVars:
+      - key: FRONTEND_URL
+        fromService:
+          name: setharkk-frontend
+          type: web
+          property: url
+      - key: BACKEND_URL
+        fromService:
+          name: setharkk-backend
+          type: web
+          property: url
+    healthCheckPath: /health 
