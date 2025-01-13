@@ -1,99 +1,53 @@
-# Render Blueprint Configuration
-version: "1"
+# Blueprint configuration for Setharkk application
+# This includes a frontend service, a backend service, and the databases (PostgreSQL, MongoDB, Redis).
+
 services:
   # Frontend Service
   - type: web
     name: setharkk-frontend
+    plan: free
     runtime: docker
     repo: https://github.com/Setharkk/Application-Setharkk
-    region: oregon
-    dockerContext: ./frontend
-    dockerfilePath: ./frontend/Dockerfile
-    plan: free
+    buildCommand: "npm install && npm run build"
+    startCommand: "npm start"
     envVars:
-      - key: NODE_ENV
-        value: production
       - key: VITE_API_URL
-        value: https://setharkk-backend.onrender.com/api
-
-  # Backend Service
-  - type: web
-    name: setharkk-backend
-    runtime: docker
-    repo: https://github.com/Setharkk/Application-Setharkk
-    region: oregon
-    dockerContext: ./backend
-    dockerfilePath: ./backend/Dockerfile
-    plan: free
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: PORT
-        value: 3000
-      - key: MONGODB_URI
-        fromService:
-          name: setharkk-mongodb
-          type: pserv
-          property: connectionString
-      - key: REDIS_URI
-        fromService:
-          name: setharkk-redis
-          type: pserv
-          property: connectionString
-      - key: POSTGRES_URI
-        fromService:
-          name: setharkk-postgres
-          type: pserv
-          property: connectionString
-
-  # PostgreSQL Database
-  - type: pserv
-    name: setharkk-postgres
-    plan: free
-    region: oregon
-    ipAllowList: []
-    disk:
-      name: data
-      mountPath: /var/lib/postgresql/data
-      sizeGB: 10
-
-  # MongoDB Database
-  - type: pserv
-    name: setharkk-mongodb
-    plan: free
-    region: oregon
-    ipAllowList: []
-    disk:
-      name: data
-      mountPath: /data/db
-      sizeGB: 10
-
-  # Redis Cache
-  - type: pserv
-    name: setharkk-redis
-    plan: free
-    region: oregon
-    ipAllowList: []
-
-  # Nginx Service
-  - type: web
-    name: setharkk-nginx
-    runtime: docker
-    repo: https://github.com/Setharkk/Application-Setharkk
-    region: oregon
-    dockerContext: ./nginx
-    dockerfilePath: ./nginx/Dockerfile
-    plan: free
-    envVars:
-      - key: FRONTEND_URL
-        fromService:
-          name: setharkk-frontend
-          type: web
-          property: url
-      - key: BACKEND_URL
         fromService:
           name: setharkk-backend
           type: web
           property: url
-    healthCheckPath: /health
 
+  # Backend Service
+  - type: web
+    name: setharkk-backend
+    plan: free
+    runtime: docker
+    repo: https://github.com/Setharkk/Application-Setharkk
+    buildCommand: "npm install"
+    startCommand: "node server.js"
+    envVars:
+      - key: POSTGRES_URI
+        fromDatabase:
+          name: setharkk-postgres
+          property: connectionString
+      - key: MONGODB_URI
+        fromDatabase:
+          name: setharkk-mongodb
+          property: connectionString
+      - key: REDIS_URI
+        fromDatabase:
+          name: setharkk-redis
+          property: connectionString
+
+databases:
+  # PostgreSQL Database
+  - name: setharkk-postgres
+    plan: free
+
+  # MongoDB Database
+  - name: setharkk-mongodb
+    plan: free
+
+  # Redis Cache
+  - name: setharkk-redis
+    plan: free
