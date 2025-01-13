@@ -1,3 +1,4 @@
+# Exported from Render on 2025-01-13T14:17:12Z
 services:
 - type: web
   name: Application-Setharkk
@@ -8,4 +9,3 @@ services:
   dockerContext: .
   dockerfilePath: ./Dockerfile
 version: "1"
-
