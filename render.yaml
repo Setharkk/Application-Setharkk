@@ -6,9 +6,8 @@ services:
     name: setharkk-frontend
     runtime: node
     repo: https://github.com/Setharkk/Application-Setharkk
-    rootDirectory: frontend
-    buildCommand: npm install && npm run build
-    startCommand: npm run preview
+    buildCommand: cd frontend && npm install && npm run build
+    startCommand: cd frontend && npm run preview
     plan: free
     envVars:
       - key: NODE_ENV
@@ -21,9 +20,8 @@ services:
     name: setharkk-backend
     runtime: node
     repo: https://github.com/Setharkk/Application-Setharkk
-    rootDirectory: backend
-    buildCommand: npm install
-    startCommand: npm start
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
     plan: free
     envVars:
       - key: NODE_ENV
@@ -31,55 +29,17 @@ services:
       - key: PORT
         value: 3000
       - key: MONGODB_URI
-        value: ${MONGODB_URI}
+        sync: false
       - key: REDIS_URI
-        value: ${REDIS_URI}
+        sync: false
       - key: POSTGRES_URI
-        value: ${POSTGRES_URI}
-
-  # Base de données PostgreSQL
-  - type: pserv
-    name: setharkk-postgres
-    runtime: docker
-    image: postgres:latest
-    plan: free
-    env: docker
-    disk:
-      name: postgres-data
-      mountPath: /var/lib/postgresql/data
-      sizeGB: 10
-    envVars:
-      - key: POSTGRES_DB
-        value: setharkk
-      - key: POSTGRES_USER
-        generateValue: true
-      - key: POSTGRES_PASSWORD
-        generateValue: true
-
-  # MongoDB Database
-  - type: pserv
-    name: setharkk-mongodb
-    plan: free
-    region: oregon
-    ipAllowList: []
-    disk:
-      name: data
-      mountPath: /data/db
-      sizeGB: 10
-
-  # Redis Cache
-  - type: pserv
-    name: setharkk-redis
-    plan: free
-    region: oregon
-    ipAllowList: []
+        sync: false
 
   # Nginx Service
   - type: web
     name: setharkk-nginx
     runtime: docker
     repo: https://github.com/Setharkk/Application-Setharkk
-    region: oregon
     dockerContext: ./nginx
     dockerfilePath: ./nginx/Dockerfile
     plan: free
