@@ -20,10 +20,10 @@ services:
   # Backend Service
   - type: web
     name: setharkk-backend
-    runtime: node
+    runtime: docker
     repo: https://github.com/Setharkk/Application-Setharkk
-    buildCommand: cd backend && npm ci
-    startCommand: cd backend && node server.js
+    dockerContext: .
+    dockerfilePath: ./backend/Dockerfile
     plan: free
     envVars:
       - key: NODE_ENV
