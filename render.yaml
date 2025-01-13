@@ -50,10 +50,20 @@ services:
         fromService:
           name: setharkk-frontend
           type: web
-          property: url
+          property: host
+      - key: FRONTEND_PORT
+        fromService:
+          name: setharkk-frontend
+          type: web
+          property: port
       - key: BACKEND_URL
         fromService:
           name: setharkk-backend
           type: web
-          property: url
+          property: host
+      - key: BACKEND_PORT
+        fromService:
+          name: setharkk-backend
+          type: web
+          property: port
     healthCheckPath: /health 
