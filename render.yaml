@@ -1,11 +1,98 @@
-services:
-- type: web
-  name: Application-Setharkk
-  runtime: docker
-  repo: https://github.com/Setharkk/Application-Setharkk
-  plan: free
-  region: oregon
-  dockerContext: .
-  dockerfilePath: ./Dockerfile
+# Exported from Render
 version: "1"
+services:
+  # Frontend Service
+  - type: web
+    name: setharkk-frontend
+    runtime: docker
+    repo: https://github.com/Setharkk/Application-Setharkk
+    region: oregon
+    dockerContext: ./frontend
+    dockerfilePath: ./frontend/Dockerfile
+    plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: VITE_API_URL
+        value: https://setharkk-backend.onrender.com/api
 
+  # Backend Service
+  - type: web
+    name: setharkk-backend
+    runtime: docker
+    repo: https://github.com/Setharkk/Application-Setharkk
+    region: oregon
+    dockerContext: ./backend
+    dockerfilePath: ./backend/Dockerfile
+    plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: MONGODB_URI
+        fromService:
+          name: setharkk-mongodb
+          type: pserv
+          property: connectionString
+      - key: REDIS_URI
+        fromService:
+          name: setharkk-redis
+          type: pserv
+          property: connectionString
+      - key: POSTGRES_URI
+        fromService:
+          name: setharkk-postgres
+          type: pserv
+          property: connectionString
+
+  # PostgreSQL Database
+  - type: pserv
+    name: setharkk-postgres
+    plan: free
+    region: oregon
+    ipAllowList: []
+    disk:
+      name: data
+      mountPath: /var/lib/postgresql/data
+      sizeGB: 10
+
+  # MongoDB Database
+  - type: pserv
+    name: setharkk-mongodb
+    plan: free
+    region: oregon
+    ipAllowList: []
+    disk:
+      name: data
+      mountPath: /data/db
+      sizeGB: 10
+
+  # Redis Cache
+  - type: pserv
+    name: setharkk-redis
+    plan: free
+    region: oregon
+    ipAllowList: []
+
+  # Nginx Service
+  - type: web
+    name: setharkk-nginx
+    runtime: docker
+    repo: https://github.com/Setharkk/Application-Setharkk
+    region: oregon
+    dockerContext: ./nginx
+    dockerfilePath: ./nginx/Dockerfile
+    plan: free
+    envVars:
+      - key: FRONTEND_URL
+        fromService:
+          name: setharkk-frontend
+          type: web
+          property: url
+      - key: BACKEND_URL
+        fromService:
+          name: setharkk-backend
+          type: web
+          property: url
+    healthCheckPath: /health 
