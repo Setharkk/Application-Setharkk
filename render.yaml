@@ -1,6 +1,5 @@
 # Blueprint configuration for Setharkk application
 # This includes a frontend service, a backend service, and the databases (PostgreSQL, MongoDB, Redis).
-
 services:
   # Frontend Service
   - type: web
@@ -9,13 +8,13 @@ services:
     runtime: docker
     repo: https://github.com/Setharkk/Application-Setharkk
     buildCommand: "npm install && npm run build"
-    startCommand: "npm start"
+    dockerfilePath: ./frontend/Dockerfile
     envVars:
       - key: VITE_API_URL
         fromService:
           name: setharkk-backend
           type: web
-          property: url
+          property: hostport
 
   # Backend Service
   - type: web
@@ -24,7 +23,7 @@ services:
     runtime: docker
     repo: https://github.com/Setharkk/Application-Setharkk
     buildCommand: "npm install"
-    startCommand: "node server.js"
+    dockerfilePath: ./backend/Dockerfile
     envVars:
       - key: POSTGRES_URI
         fromDatabase:
@@ -51,3 +50,4 @@ databases:
   # Redis Cache
   - name: setharkk-redis
     plan: free
+
